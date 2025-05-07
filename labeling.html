@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Label Images - Model_5_Stable_diffusion</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f9f9f9; text-align: center; }
+        form { margin-top: 20px; }
+        .image-block {
+            display: inline-block;
+            vertical-align: top;
+            margin: 15px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            width: 220px;
+        }
+        img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 5px;
+        }
+        select, input[type="number"], input[type="text"] {
+            width: 90%;
+            padding: 6px;
+            margin: 6px 0;
+            font-size: 14px;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2>Label Images - Model_5_Stable_diffusion</h2>
+    <form method="GET" action="/label">
+        <label>Select Form:
+            <select name="form" onchange="this.form.submit()">
+                {% for f in forms %}
+                <option value="{{ f }}" {% if f == selected_form %}selected{% endif %}>{{ f.replace('.json', '').capitalize() }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </form>
+
+    <form method="POST" action="/submit_labels">
+        <input type="hidden" name="form_id" value="{{ selected_form }}">
+        <input type="text" name="subject_id" placeholder="Enter Subject ID" required><br><br>
+
+        {% for img in images %}
+        {% set i = loop.index0 %}
+        <div class="image-block">
+            <img src="/serve_image?model={{ img.model }}&category={{ img.category }}&emotion={{ img.emotion }}&filename={{ img.filename }}" alt="{{ img.filename }}">
+            <input type="hidden" name="filename_{{ i }}" value="{{ img.filename }}">
+            <input type="hidden" name="model_{{ i }}" value="{{ img.model }}">
+            <input type="hidden" name="category_{{ i }}" value="{{ img.category }}">
+            <input type="hidden" name="true_emotion_{{ i }}" value="{{ img.emotion }}">
+            <label>Perceived Emotion:</label>
+            <select name="perceived_emotion_{{ i }}">
+                {% for emotion in emotions %}
+                <option value="{{ emotion }}">{{ emotion }}</option>
+                {% endfor %}
+            </select><br>
+            <label>Rating (1–10):</label>
+            <input type="number" name="rating_{{ i }}" min="1" max="10">
+        </div>
+        {% endfor %}
+        <input type="hidden" name="total" value="{{ images|length }}">
+        <br><input type="submit" value="Submit Responses">
+    </form>
+</body>
+</html>
